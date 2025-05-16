@@ -1,0 +1,10 @@
+kafka:
+  broker_address: localhost:9092
+  consumer_group: my-group
+  assignor: roundrobin
+  offset_initial: newest
+  consumer_message_buffer_size: 20
+  consume_topic: my-topic
+
+redis:
+  address: localhost:6379

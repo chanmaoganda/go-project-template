@@ -1,0 +1,19 @@
+package config
+
+type Settings struct {
+	Kafka *KafkaConfig `yaml:"kafka"`
+	Redis *RedisConfig `yaml:"redis"`
+}
+
+type KafkaConfig struct {
+	BrokerAddress string `yaml:"broker_address"`
+	ConsumerGroup string `yaml:"consumer_group"`
+	ConsumeTopic string `yaml:"consume_topic"`
+	Assignor string `yaml:"assignor"`
+	OffsetInitial string `yaml:"offset_initial"`
+	ConsumerMessageBufferSize int `yaml:"consumer_message_buffer_size"`
+}
+
+type RedisConfig struct {
+	Address string `yaml:"address"`
+}
