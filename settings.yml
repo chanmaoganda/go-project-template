@@ -3,8 +3,9 @@ kafka:
   consumer_group: my-group
   assignor: roundrobin
   offset_initial: newest
-  consumer_message_buffer_size: 20
   consume_topic: my-topic
-
+  consumer_message_buffer_size: 20
+  produce_topic: my-topic
+  producer_message_buffer_size: 30
 redis:
   address: localhost:6379

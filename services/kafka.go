@@ -1,10 +1,9 @@
-package model
+package services
 
 import (
 	"context"
 	"errors"
 	"strings"
-	"time"
 
 	"github.com/IBM/sarama"
 	"github.com/chanmaoganda/go-project-template/config"
@@ -73,8 +72,9 @@ func NewSaramaConfig(kafkaCfg *config.KafkaConfig) *sarama.Config {
 	// producer configurations
 	{
 		config.Producer.RequiredAcks = sarama.WaitForLocal
+		config.Producer.Return.Successes = true
 		config.Producer.Compression = sarama.CompressionGZIP
-		config.Producer.Flush.Frequency = 500 * time.Millisecond
+		// config.Producer.Flush.Frequency = 500 * time.Millisecond
 	}
 
 	return config
@@ -83,17 +83,19 @@ func NewSaramaConfig(kafkaCfg *config.KafkaConfig) *sarama.Config {
 type ConsumerGroupProxy struct {
 	consumer *Consumer
 	group    sarama.ConsumerGroup
-	topics   []string
 }
 
 func (p *ConsumerGroupProxy) MessageChan() <-chan *sarama.ConsumerMessage {
 	return p.consumer.ConsumerChan
 }
 
-func (p *ConsumerGroupProxy) StartConsume(ctx context.Context) {
+// Warning! before consuming, remember to get the chan from MessageChan(), messages would be sent to this chan
+// 
+// This function is a non-blocking consume
+func (p *ConsumerGroupProxy) StartConsume(ctx context.Context, topics []string) {
 	logrus.Debug("Consuming started")
 	for {
-		if err := p.group.Consume(ctx, p.topics, p.consumer); err != nil {
+		if err := p.group.Consume(ctx, topics, p.consumer); err != nil {
 			if errors.Is(err, sarama.ErrClosedConsumerGroup) {
 				return
 			}
@@ -115,19 +117,15 @@ func NewConsumerGroupProxy(kafkaCfg *config.KafkaConfig) *ConsumerGroupProxy {
 		logrus.Panicf("Error creating consumer group group: %v", err)
 	}
 
-	topis := strings.Split(kafkaCfg.ConsumeTopic, ",")
-
 	return &ConsumerGroupProxy{
 		group:    group,
 		consumer: NewConsumer(kafkaCfg),
-		topics:   topis,
 	}
 }
 
 type ProducerProxy struct {
 	Producer     sarama.SyncProducer
 	ProducerChan chan *sarama.ProducerMessage
-	topic        string
 }
 
 func (p *ProducerProxy) StartProduce(ctx context.Context) {
@@ -141,7 +139,7 @@ func (p *ProducerProxy) StartProduce(ctx context.Context) {
 	}
 }
 
-func (p *ProducerProxy) MessageChan() chan<- *sarama.ProducerMessage {
+func (p *ProducerProxy) MessageChan() chan <- *sarama.ProducerMessage {
 	return p.ProducerChan
 }
 
@@ -155,5 +153,6 @@ func NewProducerProxy(kafkaCfg *config.KafkaConfig) *ProducerProxy {
 
 	return &ProducerProxy{
 		Producer: producer,
+		ProducerChan: make(chan *sarama.ProducerMessage, kafkaCfg.ProducerMessageBufferSize),
 	}
 }
