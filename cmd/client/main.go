@@ -9,6 +9,7 @@ import (
 
 	"github.com/IBM/sarama"
 	"github.com/chanmaoganda/go-project-template/common"
+	"github.com/chanmaoganda/go-project-template/config"
 	"github.com/chanmaoganda/go-project-template/services"
 	"github.com/sirupsen/logrus"
 )
@@ -26,7 +27,7 @@ func init() {
 }
 
 func main() {
-	worker, err := services.NewWorker()
+	settings, err := config.NewSettings()
 	if err != nil {
 		logrus.Error(err)
 		os.Exit(1)
@@ -34,7 +35,7 @@ func main() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	proxy := services.NewProducerProxy(worker.Kafka)
+	proxy := services.NewProducerProxy(settings.Kafka)
 	ch := proxy.MessageChan()
 
 	go func() {
@@ -44,7 +45,7 @@ func main() {
 		logrus.Debug("Sending Messages")
 		for _, msg := range messages {
 			str_msg := strconv.Itoa(msg)
-			ch <- common.NewProducerMessage(worker.Kafka.ProduceTopic, str_msg, []byte(str_msg))
+			ch <- common.NewProducerMessage(settings.Kafka.ProduceTopic, str_msg, []byte(str_msg))
 		}
 		cancel()
 	}()

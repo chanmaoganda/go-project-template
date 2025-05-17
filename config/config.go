@@ -1,5 +1,11 @@
 package config
 
+import (
+	"os"
+
+	"gopkg.in/yaml.v3"
+)
+
 type Settings struct {
 	Kafka *KafkaConfig `yaml:"kafka"`
 	Redis *RedisConfig `yaml:"redis"`
@@ -18,4 +24,20 @@ type KafkaConfig struct {
 
 type RedisConfig struct {
 	Address string `yaml:"address"`
+}
+
+func NewSettings() (*Settings, error) {
+	yamlFile, err := os.ReadFile("settings.yml")
+	if err != nil {
+		return nil, err
+	}
+
+	var settings Settings
+
+	err = yaml.Unmarshal(yamlFile, &settings)
+	if err != nil {
+		return nil, err
+	}
+	
+	return &settings, nil
 }
