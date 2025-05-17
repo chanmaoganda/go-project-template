@@ -38,7 +38,7 @@ func main() {
 	ch := proxy.MessageChan()
 
 	go proxy.StartConsume(ctx, consume_topics)
-	
+
 	for msg := range ch {
 		logrus.Debug(string(msg.Value))
 	}

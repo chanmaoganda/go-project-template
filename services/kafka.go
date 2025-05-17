@@ -90,7 +90,7 @@ func (p *ConsumerGroupProxy) MessageChan() <-chan *sarama.ConsumerMessage {
 }
 
 // Warning! before consuming, remember to get the chan from MessageChan(), messages would be sent to this chan
-// 
+//
 // This function is a non-blocking consume
 func (p *ConsumerGroupProxy) StartConsume(ctx context.Context, topics []string) {
 	logrus.Debug("Consuming started")
@@ -139,7 +139,7 @@ func (p *ProducerProxy) StartProduce(ctx context.Context) {
 	}
 }
 
-func (p *ProducerProxy) MessageChan() chan <- *sarama.ProducerMessage {
+func (p *ProducerProxy) MessageChan() chan<- *sarama.ProducerMessage {
 	return p.ProducerChan
 }
 
@@ -152,7 +152,7 @@ func NewProducerProxy(kafkaCfg *config.KafkaConfig) *ProducerProxy {
 	}
 
 	return &ProducerProxy{
-		Producer: producer,
+		Producer:     producer,
 		ProducerChan: make(chan *sarama.ProducerMessage, kafkaCfg.ProducerMessageBufferSize),
 	}
 }

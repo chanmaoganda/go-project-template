@@ -38,7 +38,7 @@ func main() {
 	ch := proxy.MessageChan()
 
 	go func() {
-		messages := []int {
+		messages := []int{
 			1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
 		}
 		logrus.Debug("Sending Messages")
@@ -47,10 +47,10 @@ func main() {
 			ch <- common.NewProducerMessage(worker.Kafka.ProduceTopic, str_msg, []byte(str_msg))
 		}
 		cancel()
-	} ()
+	}()
 
 	go proxy.StartProduce(ctx)
 
-	<- ctx.Done()
+	<-ctx.Done()
 	time.Sleep(2 * time.Second)
 }
